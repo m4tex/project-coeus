@@ -5,13 +5,14 @@
 }
 
 body {
-    background: linear-gradient(45deg, rgb(48,48,48) 0%, rgb(93,93,93) 100%);
+    background: linear-gradient(45deg, rgb(75, 75, 75) 0%, rgb(52, 52, 52) 100%);
     background-size: 100% 485%;
 }
 
 header {
     height: 60px;
-    background-color: rgba(125, 125, 125, 0.5);
+    background-color: dimgray;
+    borderbo
 }
 
 main {
@@ -26,11 +27,11 @@ main {
 }
 
 #grid-canvas {
-    height: 86vh;
-    width: 80vw;
+    height: 800px;
+    width: 1200px;
 
     border-radius: 8px;
-    background-color: darkgray;
+    background-color: rgba(255, 255, 255, 0.2);
 
     box-shadow: 0 0 4px 0 black;
 }
