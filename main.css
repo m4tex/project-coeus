@@ -1,0 +1,41 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(45deg, rgb(48,48,48) 0%, rgb(93,93,93) 100%);
+    background-size: 100% 485%;
+}
+
+header {
+    height: 60px;
+    background-color: rgba(125, 125, 125, 0.5);
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    gap: 25px;
+
+    height: calc(100vh - 60px);
+}
+
+#grid-canvas {
+    height: 86vh;
+    width: 80vw;
+
+    border-radius: 8px;
+    background-color: darkgray;
+
+    box-shadow: 0 0 4px 0 black;
+}
+
+#network-canvas {
+    height: 80vh;
+    width: 15vw;
+}
