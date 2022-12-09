@@ -1,5 +1,5 @@
 const gridWidth = 6, gridHeight = 5;
-const mineCount = 6;
+const mineCount = 4;
 
 let grid;
 
