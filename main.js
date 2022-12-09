@@ -1,5 +1,5 @@
-const gridWidth = 30, gridHeight = 20;
-const mineCount = 200;
+const gridWidth = 6, gridHeight = 5;
+const mineCount = 6;
 
 let grid;
 
@@ -10,6 +10,7 @@ window.addEventListener('load', () => {
 
     grid = new MineGrid(gridWidth, gridHeight, mineCount);
     grid.draw(canvas);
+    console.log(grid);
 
     canvas.addEventListener('click', ev => {
         grid.revealTile(...grid.mouseToTile(ev.offsetX, ev.offsetY, canvas));
@@ -20,5 +21,5 @@ window.addEventListener('load', () => {
         ev.preventDefault();
         grid.toggleFlag(...grid.mouseToTile(ev.offsetX, ev.offsetY, canvas));
         grid.draw(canvas);
-    })
+    });
 });

@@ -1,5 +1,13 @@
 "use strict";
 
+///
+///Grid values
+///1-8 = Mine count
+///-1 = Mine
+///-2 Flag
+///undefined = Grid border
+///
+
 class MineGrid {
     #grid;
     #flags = [];
@@ -9,8 +17,8 @@ class MineGrid {
         this.width = width;
         this.height = height;
 
-        this.#grid = new Array(height);
-        this.#grid.fill(new Array(width));
+        this.#grid = Array(height);
+        this.#grid.fill(Array(width));
 
         if (mines > width*height) mines = width*height;
 
@@ -20,27 +28,29 @@ class MineGrid {
 
             do {
                 mineX = Math.floor(Math.random()*width);
-                mineY = Math.floor(Math.random()*height)
-            } while (this.#grid[mineY][mineX] === -1) //True if it's a mine
+                mineY = Math.floor(Math.random()*height);
+            } while (this.#grid[mineY][mineX] !== undefined) //True if it's a mine
 
             this.#grid[mineY][mineX] = -1;
         }
 
-        alert('teataet')
         // Calculate tile numbers
         this.#grid.forEach((row, i) => row.forEach((val, j) => {
             if (val === -1) return;
             this.#grid[i][j] = this.countMines(j, i);
         }));
-
     }
 
     //Reveals the tile and returns the revealed number of mines nearby or -1 for a mine
     revealTile(x,y) {
+        return 0;
+
         if(x > 0 && y > 0 && x < this.height && y < this.width) return;
         if(this.#flags.includes(`${x}|${y}`)) return;
 
         let value = this.#grid[y][x];
+
+        // this.#grid[y][x] =
 
         if(value === 0) {
             let neighbors = this.#neighboringValues(x,y,false);
@@ -55,7 +65,7 @@ class MineGrid {
     }
 
     toggleFlag(x,y) {
-        if (typeof this.#grid[y][x] !== 'boolean') return;
+        if (typeof this.#grid[y][x] === 'boolean') return;
 
         let i = this.#flags.indexOf(`${x}|${y}`);
         if(i === -1) this.#flags.push(`${x}|${y}`);
@@ -146,7 +156,7 @@ class MineGrid {
 
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
                     ctx.font = '24px arial';
-                    ctx.fillText(this.#grid[i][j], j*tileWidth + tileWidth/2 - 6, i*tileHeight + tileHeight/2 + 7);
+                    ctx.fillText(value, j*tileWidth + tileWidth/2 - 6, i*tileHeight + tileHeight/2 + 7);
 
                     break;
             }
