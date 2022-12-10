@@ -11,8 +11,10 @@
  *     -2 Flag
  *     -1 = Mine
  *     1-8 = Tile mine neighbor count
+ *
  *     9 = Exposed mine (-1 + 10)
  *     10-18 = Exposed tiles (Tile number + 10)
+ *
  *     19 = Flagged mine (-1 + 20)
  *     20-28 = Flagged tiles (Tile number + 20)
  */
@@ -29,11 +31,11 @@ class MineGrid {
         this.height = height;
         this.mines = mines;
 
-        this.#grid = Array(width).fill(0).emptyMap(row => Array(height));
+        this.#grid = Array(height).emptyMap(() => Array(width).fill(0));
 
         if (mines > width * height) this.mines = width * height;
 
-        //populate with mines
+            //populate with mines
         for (let i = 0; i < this.mines; i++) {
             let mineX, mineY;
 
@@ -54,63 +56,60 @@ class MineGrid {
 
     //Reveals the tile and returns the revealed number of mines nearby or -1 for a mine
     revealTile(x, y) {
-
-        if (x > 0 && y > 0 && x < this.height && y < this.width) return;
-        if (this.#grid[y][x] >= 19) return;
-
         let value = this.#grid[y][x];
 
-        // this.#grid[y][x] =
+        if (!this.coordinatesInBounds(x, y) || value > 8) return;
+
+        this.#grid[y][x] = value + 10;
 
         if (value === 0) {
-            let neighbors = this.#neighboringValues(x, y, false);
+            for (let i = 0; i < 8; i++) {
+                const angle = i * (Math.PI/4);
+                const yOffset = Math.round(Math.sin(angle));
+                const xOffset = Math.round(Math.cos(angle));
 
-            if (neighbors[0] === 0) this.revealTile(x, y + 1);
-            if (neighbors[1] === 0) this.revealTile(x + 1, y);
-            if (neighbors[2] === 0) this.revealTile(x, y - 1);
-            if (neighbors[3] === 0) this.revealTile(x - 1, y);
+                if (!this.coordinatesInBounds(x + xOffset, y + yOffset)) continue;
+
+                this.revealTile(xOffset + x, yOffset + y);
+            }
         }
 
         return value;
     }
 
     toggleFlag(x, y) {
-        if (typeof this.#grid[y][x] === 'boolean') return;
+        const value = this.#grid[y][x];
+        if (value >= 9 && value < 19) return;
 
-        let i = this.#flags.indexOf(`${x}|${y}`);
-        if (i === -1) this.#flags.push(`${x}|${y}`);
-        else this.#flags.splice(i, 1);
+        if (value >= 19) {
+            this.#grid[y][x] -= 20;
+        }
+        else this.#grid[y][x] += 20;
     }
 
     countMines(x, y) {
-        let values = this.#neighboringValues(x, y);
-        let converted = values.map(value => +(value === -1));
-        return converted.reduce((prev, current) => prev + current);
+        const values = this.#neighboringValues(x, y);
+        return values.reduce((prev, current) => prev + +(current === -1), 0);
     }
 
     //Returns the values in counter-clockwise order
     #neighboringValues(x, y, diagonal = true) {
         let values = [];
 
-        if (diagonal) {
-            values.push(this.#grid[y + 1]?.at(x - 1));
-            values.push(this.#grid[y]?.at(x - 1));
-            values.push(this.#grid[y - 1]?.at(x - 1));
+        const angleStep = diagonal ? (Math.PI/4) : (Math.PI/2);
+        const stepCount = diagonal ? 8 : 4;
 
-            values.push(this.#grid[y - 1]?.at(x));
-            values.push(this.#grid[y - 1]?.at(x + 1));
+        //Trigonometry time 😎
+        for (let i = 0; i < stepCount; i++) {
+            const angle = i * angleStep;
+            const yOffset = Math.round(Math.sin(angle));
+            const xOffset = Math.round(Math.cos(angle));
 
-            values.push(this.#grid[y]?.at(x + 1));
-            values.push(this.#grid[y + 1]?.at(x + 1));
-            values.push(this.#grid[y + 1]?.at(x));
-        } else {
-            values.push(this.#grid[y + 1]?.at(x));
-            values.push(this.#grid[y]?.at(x + 1));
-            values.push(this.#grid[y - 1]?.at(x));
-            values.push(this.#grid[y]?.at(x - 1));
+            if (!this.coordinatesInBounds(x + xOffset, y + yOffset))
+                values.push(undefined);
+            else values.push(this.#grid[y + yOffset]?.at(x + xOffset));
         }
 
-        values.map(val => val === undefined ? -5 : val);
         return values;
     }
 
@@ -120,6 +119,10 @@ class MineGrid {
         return [Math.floor(mouseX / tileWidth), Math.floor(mouseY / tileHeight)]
     }
 
+    coordinatesInBounds(x, y) {
+        return (x >= 0 && y >= 0 && x < this.width && y < this.height);
+    }
+    
     draw(canvas) {
         const tileWidth = canvas.width / this.width;
         const tileHeight = canvas.height / this.height;
@@ -149,37 +152,30 @@ class MineGrid {
         this.#grid.forEach((row, i) => row.forEach((value, j) => {
             const rect = ctx => ctx.fillRect(j * tileWidth, i * tileHeight, tileWidth, tileHeight);
 
-            switch (value) {
-                case true:
-                case false:
-                    ctx.fillStyle = 'gray';
-                    rect(ctx);
-                    break;
-                case -1: //A mine
-                    ctx.fillStyle = 'darkred';
-                    rect(ctx);
-                    break;
+            if (value === 10) return;
 
-                default: //Mines nearby, from 1 to 8
-                    if (typeof value !== 'number' || value < 0 || value > 9) throw new Error("Unhandled tile type.");
-                    if (value === 0) return; //if no mine
-
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                    ctx.font = '24px arial';
-                    ctx.fillText(value, j * tileWidth + tileWidth / 2 - 6, i * tileHeight + tileHeight / 2 + 7);
-
-                    break;
+            if (value === 9) { //Exposed mine
+                ctx.fillStyle = 'darkred';
+                rect(ctx);
+            } else if (value > 10 && value < 19) { //Exposed number tiles
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.font = '24px arial';
+                ctx.fillText((value - 10).toString(), j * tileWidth + tileWidth / 2 - 6, i * tileHeight + tileHeight / 2 + 7);
+            } else if (value >= 19 && value <= 28) {
+                ctx.fillStyle = 'darkgreen';
+                rect(ctx);
+            } else {
+                ctx.fillStyle = 'gray';
+                rect(ctx);
             }
         }));
 
         ctx.fillStyle = 'darkgreen';
-        let flags = Array(width).fill(0).emptyMap(() => Array(height));
+
         this.#grid.map((row, i) => row.map((value, j) => {
-            if (value >= 19) flags.push
+            if (value >= 19) {
+                ctx.fillRect(j * tileWidth + 4, i * tileHeight + 4, tileWidth - 8, tileHeight - 8);
+            }
         }));
-        this.#flags.forEach(flag => {
-            const [x, y] = flag.split("|").map(num => parseInt(num));
-            ctx.fillRect(x * tileWidth + 4, y * tileHeight + 4, tileWidth - 8, tileHeight - 8);
-        });
     }
 }
