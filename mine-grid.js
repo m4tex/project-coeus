@@ -8,9 +8,8 @@
  *
  *     undefined = Grid border
  *
- *     -2 Flag
  *     -1 = Mine
- *     1-8 = Tile mine neighbor count
+ *     1-8 = Numbered tiles (mines in one tile radius incl. diagonal)
  *
  *     9 = Exposed mine (-1 + 10)
  *     10-18 = Exposed tiles (Tile number + 10)
@@ -19,12 +18,15 @@
  *     20-28 = Flagged tiles (Tile number + 20)
  */
 
+const winEvent = new Event('win');
+const lossEvent = new Event('loss');
 
 class MineGrid {
     #grid;
     width;
     height;
     mines;
+    revealed = 0;
 
     constructor(width, height, mines) {
         this.width = width;
@@ -60,9 +62,12 @@ class MineGrid {
 
         if (!this.coordinatesInBounds(x, y) || value > 8) return;
 
+        this.revealed++;
+
         this.#grid[y][x] = value + 10;
 
         if (value === 0) {
+            //My math teacher would be proud, not my PC tho because it takes like 15 times longer than hardcoding it XD
             for (let i = 0; i < 8; i++) {
                 const angle = i * (Math.PI/4);
                 const yOffset = Math.round(Math.sin(angle));
