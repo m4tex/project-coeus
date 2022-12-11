@@ -18,9 +18,6 @@
  *     20-28 = Flagged tiles (Tile number + 20)
  */
 
-const winEvent = new Event('win');
-const lossEvent = new Event('loss');
-
 class MineGrid {
     #grid;
     width;
@@ -98,15 +95,12 @@ class MineGrid {
     }
 
     //Returns the values in counter-clockwise order
-    #neighboringValues(x, y, diagonal = true) {
+    #neighboringValues(x, y) {
         let values = [];
 
-        const angleStep = diagonal ? (Math.PI/4) : (Math.PI/2);
-        const stepCount = diagonal ? 8 : 4;
-
         //Trigonometry time 😎
-        for (let i = 0; i < stepCount; i++) {
-            const angle = i * angleStep;
+        for (let i = 0; i < 8; i++) {
+            const angle = i * (Math.PI/4);
             const yOffset = Math.round(Math.sin(angle));
             const xOffset = Math.round(Math.cos(angle));
 

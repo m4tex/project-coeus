@@ -47,6 +47,7 @@ button:active {
 #network-canvas {
     height: 80vh;
     width: 15vw;
+    background-color: #dadada;
 }
 
 #game-modal {
